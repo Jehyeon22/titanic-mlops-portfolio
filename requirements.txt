@@ -1,0 +1,9 @@
+# 레포 전체(학습 + 서빙 + 모니터링) 개발/CI용 통합 requirements.
+# 서빙 이미지 자체는 serve/requirements.txt (최소 의존성)만 사용한다.
+-r serve/requirements.txt
+seaborn==0.13.2
+evidently==0.7.21
+mlflow==3.16.0
+httpx==0.28.1
+pytest==8.3.4
+pyyaml==6.0.3

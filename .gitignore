@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+
+# 학습/모니터링 생성물 (README대로 재현 가능하므로 커밋하지 않음)
+mlruns/
+mlflow.db
+serve/model.joblib
+monitoring/reference.csv
+monitoring/recent.csv
+monitoring/drift_report.html
+
+.pytest_cache/
+.DS_Store

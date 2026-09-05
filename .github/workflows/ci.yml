@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  MLFLOW_DISABLE_AGENT_HINT: "1"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Train model (W2/W3 — 학습 + MLflow 로깅, serve/model.joblib 생성)
+        run: python train/train.py
+
+      - name: Serving API smoke test (W4/W6)
+        run: python -m pytest tests/ -v
+
+      - name: Build serving image (W4 — 실제로 배포 가능한지 검증)
+        run: docker build -t titanic-api:ci -f serve/Dockerfile serve/
+
+      - name: Run drift report (W7 — Evidently 리포트 생성 검증)
+        run: |
+          python monitoring/make_drift_data.py
+          python monitoring/make_drift_report.py
+
+      - name: Validate k8s manifest (W5 — 문법 검증만, 실제 클러스터 배포는 안 함)
+        run: |
+          python - <<'PY'
+          import yaml, sys
+          with open("deploy/k8s/deploy.yml") as f:
+              docs = list(yaml.safe_load_all(f))
+          assert len(docs) == 2, f"expected 2 documents, got {len(docs)}"
+          print("k8s manifest OK:", [d["kind"] for d in docs])
+          PY
